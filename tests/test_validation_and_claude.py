@@ -126,3 +126,21 @@ def test_redaction_keeps_pii_out_of_prompts():
                      location=Location(label="Remote"), start_date=date(2026, 11, 2))
     blob = str(redact_for_llm(rec))
     assert "Piedmont" not in blob and "94611" not in blob and "priya.raman@" not in blob and "Oakland" in blob
+
+def test_openai_advisor_forces_function_call():
+    import json
+    from onboard_sync.claude import OpenAIAdvisor
+    sent = {}
+
+    class FakeCompletions:
+        def create(self, **kw):
+            sent.update(kw)
+            call = SimpleNamespace(function=SimpleNamespace(arguments=json.dumps({
+                "recommended_option": "keep_ours", "action": "request_approval", "confidence": 0.7,
+                "rationale": "r", "message": "m"})))
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(tool_calls=[call]))])
+    adv = OpenAIAdvisor.__new__(OpenAIAdvisor)
+    adv.client, adv.model = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions())), "gpt-6-luna"
+    d = adv.triage({"kind": "conflict", "details": {}}, {}, {"accept_theirs": "a", "keep_ours": "b"})
+    assert d.recommended_option == "keep_ours" and d.source == "openai"
+    assert sent["tool_choice"] == {"type": "function", "function": {"name": "record_decision"}}

@@ -30,9 +30,11 @@ def _home() -> Path:
 
 
 def _settings(live: bool) -> Settings:
-    if live and not os.getenv("ANTHROPIC_API_KEY"):
-        raise SystemExit("--live-claude needs ANTHROPIC_API_KEY")
-    return Settings(claude_mode="live" if live else "stub", retry_base_seconds=0)
+    s = Settings(claude_mode="live" if live else "stub", retry_base_seconds=0)
+    key = "OPENAI_API_KEY" if s.llm_provider == "openai" else "ANTHROPIC_API_KEY"
+    if live and not os.getenv(key):
+        raise SystemExit(f"--live-claude needs {key}")
+    return s
 
 
 def main(argv: list[str] | None = None) -> None:

@@ -98,6 +98,8 @@ class Settings:
     # Claude
     claude_mode: str = field(default_factory=lambda: os.getenv("ONBOARD_SYNC_CLAUDE", "auto"))  # auto|live|stub
     claude_model: str = field(default_factory=lambda: os.getenv("ONBOARD_SYNC_CLAUDE_MODEL", "claude-sonnet-5-5"))
+    llm_provider: str = field(default_factory=lambda: os.getenv("ONBOARD_SYNC_LLM", "claude"))  # claude|openai
+    openai_model: str = field(default_factory=lambda: os.getenv("ONBOARD_SYNC_OPENAI_MODEL", "gpt-6-luna"))
     judge_min_confidence: float = 0.85
     # (exception kind, option) pairs Claude may resolve without a human. Empty by
     # default: autonomy is earned per decision type once its precision is measured.

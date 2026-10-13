@@ -1,0 +1,258 @@
+{
+ "seq": 1006,
+ "calls": {
+  "workday.hire": 1,
+  "okta.create_user": 1,
+  "lumos.create_request": 1,
+  "sheets.append_row": 1,
+  "expoit.create_order": 1,
+  "okta.update_profile": 1,
+  "lumos.update_request": 1,
+  "expoit.patch_order": 1,
+  "sheets.update_row": 1
+ },
+ "chaos": [],
+ "clock": "2026-10-13T16:15:00+00:00",
+ "workday": {
+  "workers": {
+   "W-1001": {
+    "Worker_ID": "W-1001",
+    "Status": "Pre-Hire",
+    "Legal_First_Name": "Priya",
+    "Legal_Last_Name": "Raman",
+    "Preferred_First_Name": null,
+    "Personal_Email": "priya.raman.home@gmail.com",
+    "Hire_Date": "2026-11-09",
+    "Job_Title": "Senior Coach Success Manager",
+    "Supervisory_Org": "Customer Success",
+    "Manager_Email": "maria.lopez@betterup.com",
+    "Location_Code": "US-CA-REMOTE",
+    "Home_Address": {
+     "Address_Line_1": "4127 Piedmont Ave",
+     "Address_Line_2": "Apt 3",
+     "City": "Oakland",
+     "Region": "CA",
+     "Postal_Code": "94611",
+     "Country": "US"
+    },
+    "Worker_Type": "Employee",
+    "External_Candidate_ID": "cand_7f3a9c",
+    "Hire_ID": "h_e9f1d25a",
+    "Last_Updated": "2026-10-13T16:15:00+00:00"
+   }
+  },
+  "directory": [
+   "maria.lopez@betterup.com",
+   "sam.chen@betterup.com",
+   "alex.rivera@betterup.com",
+   "jordan.kim@betterup.com",
+   "nina.patel@betterup.com"
+  ]
+ },
+ "okta": {
+  "users": {
+   "00u_mgr0": {
+    "id": "00u_mgr0",
+    "status": "ACTIVE",
+    "aliases": [],
+    "profile": {
+     "login": "maria.lopez@betterup.com",
+     "email": "maria.lopez@betterup.com",
+     "firstName": "Maria",
+     "lastName": "Lopez"
+    }
+   },
+   "00u_mgr1": {
+    "id": "00u_mgr1",
+    "status": "ACTIVE",
+    "aliases": [],
+    "profile": {
+     "login": "sam.chen@betterup.com",
+     "email": "sam.chen@betterup.com",
+     "firstName": "Sam",
+     "lastName": "Chen"
+    }
+   },
+   "00u_mgr2": {
+    "id": "00u_mgr2",
+    "status": "ACTIVE",
+    "aliases": [],
+    "profile": {
+     "login": "alex.rivera@betterup.com",
+     "email": "alex.rivera@betterup.com",
+     "firstName": "Alex",
+     "lastName": "Rivera"
+    }
+   },
+   "00u_mgr3": {
+    "id": "00u_mgr3",
+    "status": "ACTIVE",
+    "aliases": [],
+    "profile": {
+     "login": "jordan.kim@betterup.com",
+     "email": "jordan.kim@betterup.com",
+     "firstName": "Jordan",
+     "lastName": "Kim"
+    }
+   },
+   "00u_mgr4": {
+    "id": "00u_mgr4",
+    "status": "ACTIVE",
+    "aliases": [],
+    "profile": {
+     "login": "nina.patel@betterup.com",
+     "email": "nina.patel@betterup.com",
+     "firstName": "Nina",
+     "lastName": "Patel"
+    }
+   },
+   "00u_former": {
+    "id": "00u_former",
+    "status": "DEPROVISIONED",
+    "aliases": [],
+    "profile": {
+     "login": "dana.whitfield@betterup.com",
+     "email": "dana.whitfield@betterup.com",
+     "firstName": "Dana",
+     "lastName": "Whitfield",
+     "hireId": "h_former01"
+    }
+   },
+   "00u1002": {
+    "id": "00u1002",
+    "status": "STAGED",
+    "aliases": [],
+    "profile": {
+     "login": "priya.raman@betterup.com",
+     "email": "priya.raman@betterup.com",
+     "firstName": "Priya",
+     "lastName": "Raman",
+     "displayName": "Priya Raman",
+     "title": "Senior Coach Success Manager",
+     "department": "Customer Success",
+     "managerEmail": "maria.lopez@betterup.com",
+     "countryCode": "US",
+     "employeeNumber": "W-1001",
+     "hireId": "h_e9f1d25a",
+     "activationDate": "2026-11-09"
+    }
+   }
+  }
+ },
+ "lumos": {
+  "requests": {
+   "lr_1003": {
+    "id": "lr_1003",
+    "status": "pending",
+    "hireRef": "h_e9f1d25a",
+    "oktaUserId": "00u1002",
+    "bundle": "bundle-cs-core",
+    "neededBy": "2026-11-09"
+   }
+  },
+  "idempotency": {
+   "e6e8cf4912bd8235d1bc2f11": "lr_1003"
+  }
+ },
+ "expoit": {
+  "orders": {
+   "EXP-1005": {
+    "id": "EXP-1005",
+    "status": "ordered",
+    "tracking": null,
+    "hireRef": "h_e9f1d25a",
+    "recipient": "Priya Raman",
+    "shipTo": {
+     "line1": "4127 Piedmont Ave",
+     "line2": "Apt 3",
+     "city": "Oakland",
+     "region": "CA",
+     "postal_code": "94611",
+     "country": "US"
+    },
+    "deliverBy": "2026-11-05",
+    "profile": "mbp-14-std"
+   }
+  },
+  "idempotency": {
+   "8ea87ca8f4c09a94c7fd8c37": "EXP-1005"
+  }
+ },
+ "sheets": {
+  "rows": {
+   "row-1004": {
+    "Hire ID": "h_e9f1d25a",
+    "Name": "Priya Raman",
+    "Start Date": "2026-11-09",
+    "Cohort": "Cohort 2026-11-09",
+    "Team": "Customer Success",
+    "Title": "Senior Coach Success Manager",
+    "Manager": "maria.lopez@betterup.com",
+    "Location": "US-CA-REMOTE",
+    "Work Email": "priya.raman@betterup.com",
+    "Workday ID": "W-1001",
+    "Status": "Pre-start",
+    "Buddy": "",
+    "Notes": ""
+   }
+  }
+ },
+ "slack": {
+  "messages": [
+   {
+    "ts": "ts.1006",
+    "channel": "#people-ops-onboarding",
+    "text": "[conflict] Priya Raman: workday was edited outside the engine (Hire_Date)",
+    "blocks": [
+     {
+      "type": "header",
+      "text": {
+       "type": "plain_text",
+       "text": "Priya Raman: conflict"
+      }
+     },
+     {
+      "type": "section",
+      "text": {
+       "type": "mrkdwn",
+       "text": "*workday was edited outside the engine (Hire_Date)*\nAutomated triage was unavailable, so this needs a human review."
+      }
+     },
+     {
+      "type": "context",
+      "elements": [
+       {
+        "type": "mrkdwn",
+        "text": "Recommendation: *none* (fallback, confidence 0.00) \u00b7 hire `h_e9f1d25a` \u00b7 exception `ex_527d41deaa`"
+       }
+      ]
+     },
+     {
+      "type": "actions",
+      "elements": [
+       {
+        "type": "button",
+        "action_id": "resolve:accept_theirs",
+        "text": {
+         "type": "plain_text",
+         "text": "Accept theirs"
+        },
+        "value": "{\"exception_id\": \"ex_527d41deaa\", \"option\": \"accept_theirs\"}"
+       },
+       {
+        "type": "button",
+        "action_id": "resolve:keep_ours",
+        "text": {
+         "type": "plain_text",
+         "text": "Keep ours"
+        },
+        "value": "{\"exception_id\": \"ex_527d41deaa\", \"option\": \"keep_ours\"}"
+       }
+      ]
+     }
+    ],
+    "at": "2026-10-13T16:15:00+00:00"
+   }
+  ]
+ }
+}

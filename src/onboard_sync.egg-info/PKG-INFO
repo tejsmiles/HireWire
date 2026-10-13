@@ -9,10 +9,12 @@ Requires-Dist: fastapi>=0.110; extra == "api"
 Requires-Dist: uvicorn>=0.29; extra == "api"
 Provides-Extra: claude
 Requires-Dist: anthropic>=0.40; extra == "claude"
+Provides-Extra: openai
+Requires-Dist: openai>=1.50; extra == "openai"
 Provides-Extra: mcp
 Requires-Dist: mcp>=1.2; extra == "mcp"
 Provides-Extra: dev
 Requires-Dist: pytest>=8; extra == "dev"
 Requires-Dist: httpx>=0.27; extra == "dev"
 Provides-Extra: all
-Requires-Dist: onboard-sync[api,claude,dev,mcp]; extra == "all"
+Requires-Dist: onboard-sync[api,claude,dev,mcp,openai]; extra == "all"

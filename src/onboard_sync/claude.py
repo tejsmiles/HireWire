@@ -203,7 +203,7 @@ def triage_tool(options: dict[str, str]) -> dict:
 
 class LiveAdvisor:
     name = "live"
-
+    source = "claude"
     def __init__(self, model: str, timeout: float = 20.0):
         import anthropic  # optional dependency
         self.client = anthropic.Anthropic(timeout=timeout, max_retries=2)
@@ -221,19 +221,44 @@ class LiveAdvisor:
 
     def judge_location(self, ctx: dict, candidates: dict[str, dict]) -> LocationProposal:
         data = self._call(JUDGE_SYSTEM, {"hire": ctx, "location_master": candidates}, JUDGE_TOOL)
-        return LocationProposal.model_validate({**data, "source": "claude"})
+        return LocationProposal.model_validate({**data, "source": self.source})
 
     def triage(self, exc: dict, ctx: dict, options: dict[str, str]) -> Decision:
         data = self._call(TRIAGE_SYSTEM, {"exception": exc, "context": ctx, "allowed_options": options},
                           triage_tool(options))
-        return Decision.model_validate({**data, "source": "claude"})
+        return Decision.model_validate({**data, "source": self.source})
 
     def draft_nudge(self, gate: dict, ctx: dict) -> str:
         return str(self._call(NUDGE_SYSTEM, {"gate": gate, "hire": ctx}, NUDGE_TOOL)["message"])
 
+class OpenAIAdvisor(LiveAdvisor):
+    """Same prompts, tool schemas and guardrails as LiveAdvisor; only the transport changes."""
+    name, source = "openai", "openai"
 
+    def __init__(self, model: str, timeout: float = 20.0):
+        import openai  # optional dependency; reads OPENAI_API_KEY
+        self.client = openai.OpenAI(timeout=timeout, max_retries=2)
+        self.model = model
+
+    def _call(self, system: str, payload: dict, tool: dict) -> dict:
+        resp = self.client.chat.completions.create(
+            model=self.model, max_completion_tokens=4096,
+            messages=[{"role": "system", "content": system},
+                    {"role": "user", "content": json.dumps(payload, default=str, indent=1)}],
+            tools=[{"type": "function", "function": {
+                "name": tool["name"], "description": tool["description"], "parameters": tool["input_schema"]}}],
+            tool_choice={"type": "function", "function": {"name": tool["name"]}})
+        calls = resp.choices[0].message.tool_calls or []
+        if not calls:
+            raise ValueError("model returned no tool call")
+        return json.loads(calls[0].function.arguments)
+    
 def make_advisor(settings: Settings):
     mode = settings.claude_mode
+    if settings.llm_provider == "openai":
+        if mode == "live" or (mode == "auto" and os.getenv("OPENAI_API_KEY")):
+            return OpenAIAdvisor(settings.openai_model)
+        return StubAdvisor()
     if mode == "live" or (mode == "auto" and os.getenv("ANTHROPIC_API_KEY")):
         try:
             return LiveAdvisor(settings.claude_model)

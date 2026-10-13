@@ -12,9 +12,10 @@ dependencies = ["pydantic>=2.6"]
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.29"]
 claude = ["anthropic>=0.40"]
+openai = ["openai>=1.50"]
 mcp = ["mcp>=1.2"]
 dev = ["pytest>=8", "httpx>=0.27"]
-all = ["onboard-sync[api,claude,mcp,dev]"]
+all = ["onboard-sync[api,claude,openai,mcp,dev]"]
 
 [project.scripts]
 onboard-sync = "onboard_sync.cli:main"

@@ -24,6 +24,8 @@ Claude runs through a deterministic stub by default. To use the real API:
 
 ```bash
 ANTHROPIC_API_KEY=... onboard-sync replay S08 --live-claude
+or 
+OPENAI_API_KEY=... onboard-sync replay S08 --live-claude
 ```
 
 The model is set by `ONBOARD_SYNC_CLAUDE_MODEL` and defaults to `claude-sonnet-5-5`.
