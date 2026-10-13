@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: onboard-sync
+Version: 0.1.0
+Summary: Reconciliation engine that keeps a new hire consistent across Ashby, Workday, Okta/Lumos, equipment and the cohort tracker.
+Requires-Python: >=3.11
+Requires-Dist: pydantic>=2.6
+Provides-Extra: api
+Requires-Dist: fastapi>=0.110; extra == "api"
+Requires-Dist: uvicorn>=0.29; extra == "api"
+Provides-Extra: claude
+Requires-Dist: anthropic>=0.40; extra == "claude"
+Provides-Extra: mcp
+Requires-Dist: mcp>=1.2; extra == "mcp"
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: httpx>=0.27; extra == "dev"
+Provides-Extra: all
+Requires-Dist: onboard-sync[api,claude,dev,mcp]; extra == "all"

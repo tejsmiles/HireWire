@@ -1,0 +1,2 @@
+[console_scripts]
+onboard-sync = onboard_sync.cli:main
