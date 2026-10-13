@@ -1,0 +1,23 @@
+{
+  "action": "offerAccepted",
+  "data": {
+    "candidate": {
+      "id": "cand_7f3a9c",
+      "firstName": "Priya",
+      "lastName": "Raman",
+      "preferredFirstName": null,
+      "primaryEmailAddress": {"value": "priya.raman.home@gmail.com"},
+      "homeAddress": {"line1": "4127 Piedmont Ave", "line2": "Apt 3", "city": "Oakland", "region": "CA", "postalCode": "94611", "country": "US"}
+    },
+    "offer": {
+      "id": "offer_1182",
+      "startDate": "2026-11-02",
+      "jobTitle": "Senior Coach Success Manager",
+      "department": "Customer Success",
+      "hiringManagerEmail": "maria.lopez@betterup.com",
+      "employmentType": "FullTime",
+      "location": {"name": "Remote - California", "countryCode": "US", "region": "CA"}
+    },
+    "backgroundCheck": {"status": "in_progress"}
+  }
+}

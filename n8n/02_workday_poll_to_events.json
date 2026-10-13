@@ -1,0 +1,240 @@
+{
+  "name": "onboard-sync \u00b7 Workday poll \u2192 /events",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Workday \u2192 onboard-sync\nCatches off-cycle hires and direct Workday edits. Our own writes echo back here and are recognized as no-ops by per-source change detection.\n\nThe body is serialized ONCE (Code node), signed, and sent byte-for-byte (raw body). If you let the HTTP node re-serialize JSON, the server's HMAC check fails.",
+        "height": 260,
+        "width": 420
+      },
+      "id": "fe09a603-af91-5058-9ebd-9555aca4dfce",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "d7a1b47a-cf1c-56ac-bcc4-8ae3da53945a",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// At-least-once polling: overlap the window by 5 minutes; the engine dedupes by event_id.\nconst s = $getWorkflowStaticData('global');\nconst now = new Date();\nconst since = s.lastPoll ? new Date(new Date(s.lastPoll).getTime() - 5 * 60 * 1000) : new Date(now.getTime() - 24 * 3600 * 1000);\ns.lastPoll = now.toISOString();\nreturn [{ json: { since: since.toISOString() } }];"
+      },
+      "id": "266a8541-3ddb-5bdc-a9ce-12447ef5d4ff",
+      "name": "Window (overlapping)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.WORKDAY_RAAS_URL }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "Updated_Since",
+              "value": "={{ $json.since }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8cf471b9-fa0d-5afc-ad89-dd7fe099436d",
+      "name": "Workday RaaS: changed workers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "Report_Entry",
+        "options": {}
+      },
+      "id": "a16f0c5c-5f4f-5336-9f04-b60bbb5acaf8",
+      "name": "One item per worker",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// event_id = worker + Last_Updated: unchanged workers dedupe, each edit is a new event.\nconst w = $json;\nconst envelope = {\n  event_id: `workday:${w.Worker_ID}:${w.Last_Updated}`,\n  source: 'workday',\n  type: w.Status === 'Rescinded' ? 'worker.rescinded' : 'worker.changed',\n  external_id: w.Worker_ID,\n  occurred_at: w.Last_Updated,\n  payload: { worker: w },\n};\nreturn { json: { body: JSON.stringify(envelope) } };"
+      },
+      "id": "f94501e2-cbca-5aaa-844a-6c22cd57e7cb",
+      "name": "Build envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.body }}",
+        "dataPropertyName": "signature",
+        "secret": "={{ $env.ONBOARD_SYNC_HMAC_SECRET }}",
+        "encoding": "hex"
+      },
+      "id": "cebe67e2-dd4a-512a-8333-28e0d5cad309",
+      "name": "HMAC sign body",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ONBOARD_SYNC_URL }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "79f256e6-dae7-5347-9604-298dfae1ad5e",
+      "name": "POST /events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Window (overlapping)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window (overlapping)": {
+      "main": [
+        [
+          {
+            "node": "Workday RaaS: changed workers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workday RaaS: changed workers": {
+      "main": [
+        [
+          {
+            "node": "One item per worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per worker": {
+      "main": [
+        [
+          {
+            "node": "Build envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build envelope": {
+      "main": [
+        [
+          {
+            "node": "HMAC sign body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC sign body": {
+      "main": [
+        [
+          {
+            "node": "POST /events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {}
+}

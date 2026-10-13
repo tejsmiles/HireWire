@@ -1,0 +1,143 @@
+{
+  "name": "onboard-sync \u00b7 IT hardware form \u2192 /events",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## IT hardware form \u2192 onboard-sync\nGoogle Form (Apps Script onSubmit) or any form tool posts here.\n\nThe body is serialized ONCE (Code node), signed, and sent byte-for-byte (raw body). If you let the HTTP node re-serialize JSON, the server's HMAC check fails.",
+        "height": 260,
+        "width": 420
+      },
+      "id": "fe09a603-af91-5058-9ebd-9555aca4dfce",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "it-hardware-form",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "16e5289a-d905-511f-aa2b-53d5395789c3",
+      "name": "Hardware form webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "64691f49-a2b6-4e30-a9cf-ddf7c849fd53"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The form link sent to each hire is pre-filled with hire_id, so matching is exact.\nconst f = $json.body;\nconst envelope = {\n  event_id: `it_form:${f.submission_id}`,\n  source: 'it_form',\n  type: 'hardware_form.submitted',\n  external_id: f.submission_id,\n  occurred_at: f.submitted_at ?? new Date().toISOString(),\n  payload: f,\n};\nreturn [{ json: { body: JSON.stringify(envelope) } }];"
+      },
+      "id": "f94501e2-cbca-5aaa-844a-6c22cd57e7cb",
+      "name": "Build envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.body }}",
+        "dataPropertyName": "signature",
+        "secret": "={{ $env.ONBOARD_SYNC_HMAC_SECRET }}",
+        "encoding": "hex"
+      },
+      "id": "cebe67e2-dd4a-512a-8333-28e0d5cad309",
+      "name": "HMAC sign body",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ONBOARD_SYNC_URL }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "79f256e6-dae7-5347-9604-298dfae1ad5e",
+      "name": "POST /events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Hardware form webhook": {
+      "main": [
+        [
+          {
+            "node": "Build envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build envelope": {
+      "main": [
+        [
+          {
+            "node": "HMAC sign body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC sign body": {
+      "main": [
+        [
+          {
+            "node": "POST /events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {}
+}

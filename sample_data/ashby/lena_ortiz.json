@@ -1,0 +1,23 @@
+{
+  "action": "offerAccepted",
+  "data": {
+    "candidate": {
+      "id": "cand_9e44f1",
+      "firstName": "Lena",
+      "lastName": "Ortiz",
+      "preferredFirstName": null,
+      "primaryEmailAddress": {"value": "lena.ortiz.pdx@gmail.com"},
+      "homeAddress": {"line1": "2210 SE Division St", "city": "Portland", "region": "OR", "postalCode": "97202", "country": "US"}
+    },
+    "offer": {
+      "id": "offer_1204",
+      "startDate": "2026-11-16",
+      "jobTitle": "People Partner",
+      "department": "People",
+      "hiringManagerEmail": "nina.patel@betterup.com",
+      "employmentType": "FullTime",
+      "location": {"name": "Remote - Bay Area", "countryCode": "US", "region": null}
+    },
+    "backgroundCheck": {"status": "in_progress"}
+  }
+}

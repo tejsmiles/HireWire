@@ -1,0 +1,13 @@
+{
+  "Worker_Type": "Employee",
+  "Legal_First_Name": "Dana",
+  "Legal_Last_Name": "Whitfield",
+  "Preferred_First_Name": null,
+  "Personal_Email": "dana.whitfield.nyc@protonmail.com",
+  "Hire_Date": "2026-10-26",
+  "Job_Title": "VP, Clinical Strategy",
+  "Supervisory_Org": "Clinical",
+  "Manager_Email": "jordan.kim@betterup.com",
+  "Location_Code": "US-NY-REMOTE",
+  "Home_Address": {"Address_Line_1": "311 Prospect Park W", "Address_Line_2": null, "City": "Brooklyn", "Region": "NY", "Postal_Code": "11215", "Country": "US"}
+}

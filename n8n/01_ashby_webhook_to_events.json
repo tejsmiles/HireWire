@@ -1,0 +1,171 @@
+{
+  "name": "onboard-sync \u00b7 Ashby webhook \u2192 /events",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Ashby \u2192 onboard-sync\nTrigger only: no business logic lives in n8n.\n\nThe body is serialized ONCE (Code node), signed, and sent byte-for-byte (raw body). If you let the HTTP node re-serialize JSON, the server's HMAC check fails.",
+        "height": 260,
+        "width": 420
+      },
+      "id": "fe09a603-af91-5058-9ebd-9555aca4dfce",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ashby-onboarding",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "50e0d367-c503-59c0-be03-89bb954eac82",
+      "name": "Ashby webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "22c2dc49-d3ac-4ac2-ac85-968a0c770871"
+    },
+    {
+      "parameters": {
+        "action": "hash",
+        "type": "SHA256",
+        "value": "={{ JSON.stringify($json.body) }}",
+        "dataPropertyName": "contentHash",
+        "encoding": "hex"
+      },
+      "id": "964a035d-5a78-5edc-b832-9d95b12a3399",
+      "name": "Content hash (dedupe id)",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map an Ashby webhook to the onboard-sync envelope. Identical re-deliveries hash the same,\n// so the engine's event_id dedupe makes Ashby's retries harmless.\nconst b = $json.body;\nconst types = { offerAccepted: 'offer.accepted', offerUpdate: 'offer.updated', candidateUpdate: 'candidate.updated',\n                offerRescinded: 'offer.rescinded', candidateWithdrew: 'candidate.withdrew' };\nconst envelope = {\n  event_id: `ashby:${$json.contentHash.slice(0, 24)}`,\n  source: 'ashby',\n  type: types[b.action] ?? 'candidate.updated',\n  external_id: b.data?.candidate?.id,\n  occurred_at: b.data?.updatedAt ?? new Date().toISOString(),\n  payload: b,\n};\nif (!envelope.external_id) throw new Error('Ashby payload without candidate id');\nreturn [{ json: { body: JSON.stringify(envelope) } }];"
+      },
+      "id": "f94501e2-cbca-5aaa-844a-6c22cd57e7cb",
+      "name": "Build envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.body }}",
+        "dataPropertyName": "signature",
+        "secret": "={{ $env.ONBOARD_SYNC_HMAC_SECRET }}",
+        "encoding": "hex"
+      },
+      "id": "cebe67e2-dd4a-512a-8333-28e0d5cad309",
+      "name": "HMAC sign body",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ONBOARD_SYNC_URL }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "79f256e6-dae7-5347-9604-298dfae1ad5e",
+      "name": "POST /events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Ashby webhook": {
+      "main": [
+        [
+          {
+            "node": "Content hash (dedupe id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content hash (dedupe id)": {
+      "main": [
+        [
+          {
+            "node": "Build envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build envelope": {
+      "main": [
+        [
+          {
+            "node": "HMAC sign body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC sign body": {
+      "main": [
+        [
+          {
+            "node": "POST /events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {}
+}

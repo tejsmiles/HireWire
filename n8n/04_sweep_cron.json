@@ -1,0 +1,146 @@
+{
+  "name": "onboard-sync \u00b7 sweep (anti-entropy, retries, gate reminders)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Sweep\nRe-reconciles every active hire: catches drift nobody sent an event for, retries parked targets, flips lifecycle on day 1, and sends gate reminders (each reminder at most once a day).",
+        "height": 260,
+        "width": 420
+      },
+      "id": "fe09a603-af91-5058-9ebd-9555aca4dfce",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7-19 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "c6921d9b-d844-52c4-b049-9a1e9c77a79d",
+      "name": "Hourly, business hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { body: '{}' } }];"
+      },
+      "id": "bfa3383e-a4a7-5bce-a45a-af1840486218",
+      "name": "Empty body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "value": "={{ $json.body }}",
+        "dataPropertyName": "signature",
+        "secret": "={{ $env.ONBOARD_SYNC_HMAC_SECRET }}",
+        "encoding": "hex"
+      },
+      "id": "cebe67e2-dd4a-512a-8333-28e0d5cad309",
+      "name": "HMAC sign body",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ONBOARD_SYNC_URL }}/sweep",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "a1a2d8db-8c9e-5754-8ff4-cc53dc577c6a",
+      "name": "POST /sweep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Hourly, business hours": {
+      "main": [
+        [
+          {
+            "node": "Empty body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Empty body": {
+      "main": [
+        [
+          {
+            "node": "HMAC sign body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC sign body": {
+      "main": [
+        [
+          {
+            "node": "POST /sweep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {}
+}

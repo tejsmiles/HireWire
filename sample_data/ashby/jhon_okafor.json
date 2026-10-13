@@ -1,0 +1,23 @@
+{
+  "action": "offerAccepted",
+  "data": {
+    "candidate": {
+      "id": "cand_2b81de",
+      "firstName": "Jhon",
+      "lastName": "Okafor",
+      "preferredFirstName": null,
+      "primaryEmailAddress": {"value": "j.okafor.dev@outlook.com"},
+      "homeAddress": {"line1": "908 E 6th St", "city": "Austin", "region": "TX", "postalCode": "78702", "country": "US"}
+    },
+    "offer": {
+      "id": "offer_1190",
+      "startDate": "2026-11-09",
+      "jobTitle": "Senior Software Engineer",
+      "department": "Engineering",
+      "hiringManagerEmail": "sam.chen@betterup.com",
+      "employmentType": "FullTime",
+      "location": {"name": "Remote - Texas", "countryCode": "US", "region": "TX"}
+    },
+    "backgroundCheck": {"status": "in_progress"}
+  }
+}

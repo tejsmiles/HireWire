@@ -1,0 +1,23 @@
+{
+  "action": "offerAccepted",
+  "data": {
+    "candidate": {
+      "id": "cand_5c09aa",
+      "firstName": "Marcus",
+      "lastName": "Bell",
+      "preferredFirstName": null,
+      "primaryEmailAddress": {"value": "marcusbell.sj@gmail.com"},
+      "homeAddress": {"line1": "77 Almaden Blvd", "city": "San Jose", "region": "CA", "postalCode": "95113", "country": "US"}
+    },
+    "offer": {
+      "id": "offer_1201",
+      "startDate": "2026-11-16",
+      "jobTitle": "Enterprise Account Executive",
+      "department": "Sales",
+      "hiringManagerEmail": "alex.rivera@betterup.com",
+      "employmentType": "FullTime",
+      "location": {"name": "Remote - Bay Area", "countryCode": "US", "region": null}
+    },
+    "backgroundCheck": {"status": "clear"}
+  }
+}

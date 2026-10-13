@@ -1,0 +1,15 @@
+# AI log
+
+This is a running record of where AI tools were used during the build, what they got wrong,
+and how each mistake was caught. Every entry below actually happened during this build.
+Deliverable 3 draws on it.
+
+| # | What the AI produced | What was wrong | How it was caught | Fix |
+|---|---|---|---|---|
+| 1 | **Ownership rule in the design outline:** "Workday owns HR fields once the worker record exists." | It would have blocked the main use case. Once the Workday pre-hire exists, a recruiter's start-date change in Ashby becomes "drift" and never propagates, which is the exact pain in the brief. | Writing `ownership.py` against scenario S02 (start date moves after the laptop is ordered). The rule and the scenario contradicted each other. | Ownership is now by **lifecycle phase**: Ashby until day 1, then Workday. Off-cycle hires are Workday-owned from the start. |
+| 2 | **Merge tie-breaking:** `if occurred_at < prev_at: stale`, so ties went to the later arrival. | When a webhook was replayed with the **same timestamp but older content**, the field flipped back. `bgc_status` went from `clear` to `in_progress` and back during a replay storm. No target write happened, so a write-count assertion alone would have missed it. | The S01 replay-storm output showed `accepted: 2` where `no_change` was expected. | Ties go to the first message seen (`<=`), and repeats of a value are never edits. Covered by `test_field_level_ordering_and_ties`. The harness now gives every event a distinct timestamp, as real systems do. |
+| 3 | **MCP server scaffold:** `from mcp.server.fastmcp import FastMCP`. | The installed `mcp` 2.x renamed it to `MCPServer` (`mcp.server.mcpserver`), so the import failed. The model's knowledge of the SDK was out of date. | An environment smoke test run before writing the server. | `mcp_server.py` supports both 2.x and 1.x. A test calls the tools through the real SDK. |
+| 4 | **Fixpoint loop in the reconciler.** It re-planned and re-executed until no progress was made. | A target that had just been parked after 4 failed attempts was retried immediately in the next pass of the same request, because another target had made progress. That hammers a failing dependency and defeats backoff. | The S06 output: Okta went from "parked after 4 attempts" to "ok after 3 attempts" *within one request*, not in the sweep. | Targets that failed or were parked are put in a per-run `backoff` set and aren't retried until the next reconcile, which is the sweep. |
+| 5 | **Scenario harness.** A human edit in Workday followed by an n8n poll. | The poll forwarded nothing, because the edit got the same `Last_Updated` as the previous poll. The clock hadn't moved. | The S04 narrative printed no event after the edit. | The harness advances the clock for human edits. **Production note:** poll with an overlapping window and dedupe by `worker + Last_Updated`, as `n8n/02_workday_poll_to_events.json` does. Never rely on a strict `>` watermark. |
+
+Tools used: Claude (design, code, tests), Claude Code (repo work, running the scenarios). At runtime, the Claude API (via the stub in CI) and the MCP server.
